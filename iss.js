@@ -10,8 +10,8 @@ const needle = require("needle");
  */
 const fetchMyIP = function(callback) {
   // use request to fetch IP address from JSON API
-  needle.get('https://api.ipify.org?format=json', (error, response, ip) => {
-    callback(error, ip);
+  needle.get('https://api.ipify.org?format=json', (error, response, body) => {
+
     // inside the request callback ...
     // error can be set if invalid domain, user is offline, etc.
     if (error) {
@@ -20,13 +20,35 @@ const fetchMyIP = function(callback) {
     }
     // if non-200 status, assume server error
     if (response.statusCode !== 200) {
-      const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${ip}`;
+      const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
       callback(Error(msg), null);
       return;
     }
-
+    callback(error, body);
     // if we get here, all's well and we got the data
   });
 };
 
-module.exports = { fetchMyIP };
+const fetchCoordsByIP = function(ip, callback) {
+  needle.get(`http://ipwho.is/${ip}`, (error, response, body) => {
+    // inside the request callback ...
+    // error can be set if invalid domain, user is offline, etc.
+    if (error) {
+      callback(null, body);
+      return;
+    }
+    if (body.success) {
+      let { latitude, longitude } = body;
+      callback(error, { latitude, longitude });
+      return;
+    }
+    //if the body.sucess is false
+    callback(null, `It didn't work! Error: Success status was ${body.success}. Server message says: ${body.message} for "${body.ip}" `);
+    // if we get here, all's well and we got the data
+  });
+};
+
+module.exports = {
+  fetchMyIP,
+  fetchCoordsByIP,
+};

@@ -1,30 +1,31 @@
-const {fetchMyIP,/*fetchISSFlyOverTimes,fetchCoordsByIP*/} =  require('./iss');
 
-fetchMyIP((error, ip) => {
+const { nextISSTimesForMyLocation } = require('./iss');
+
+nextISSTimesForMyLocation((error, passTimes) => {
   if (error) {
-    console.log("It didn't work!" , error);
-    return;
+    return console.log("It didn't work!", error);
+  }
+  // success, print out the deets!
+  let pushTime = [];
+  for (let time of passTimes) {
+    let {risetime, duration} = time;
+    let date = new Date(risetime * 1000);
+    let formattedDate = date.toLocaleDateString("en-US", {
+      timeZone: "America/New_York", // EST Time
+      weekday: 'long',
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+    
+    pushTime.push(`Next pass at ${formattedDate} EST for ${duration} seconds!`);
   }
 
-  console.log('Returned IP:' , ip);
-  
-  return ip;
+  pushTime.forEach(text => {
+    console.log(`${text}`);
+  });
+
 });
-
-// fetchCoordsByIP(IP, (error, data) => {
-//   if (error) {
-//     console.log("It didn't work!" , error);
-//     return;
-//   }
-//   console.log('Returned location:' , data);
-//   return data;
-// });
-
-// fetchISSFlyOverTimes ({ latitude: 45.2736841, longitude: -75.7372019 }, (error, data) =>{
-//   if (error){
-//     console.log(error);
-//     return;
-//   }
-
-//   console.log('Response', data);
-// })
